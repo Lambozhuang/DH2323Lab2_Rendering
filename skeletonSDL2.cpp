@@ -97,6 +97,15 @@ bool ClosestIntersection(
 		vec3 e2 = v2 - v0;
 		vec3 b = start - v0;
 		mat3 A( -dir, e1, e2 );
+		mat3 At(b, e1, e2);
+
+		// If t < 0 then skip the rest of the calculation
+		float t = glm::determinant(At) / glm::determinant(A);
+		if(t < 0)
+		{
+			continue;
+		}
+
 		vec3 x = glm::inverse(A) * b; // Intersection point
 
 		// Update closestIntersection
