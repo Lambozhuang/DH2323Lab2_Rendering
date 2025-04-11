@@ -1,11 +1,21 @@
 //DH2323 skeleton code, Lab2 (SDL2 version)
+#include <cstddef>
 #include <iostream>
 #include <glm/glm.hpp>
+#include <limits>
 #include "SDL2Auxiliary.h"
+#include "TestModel.h"
 
 using namespace std;
 using glm::vec3;
 using glm::mat3;
+
+struct Intersection
+{
+	vec3 position;
+	float distance;
+	int triangleIndex;
+};
 
 // ----------------------------------------------------------------------------
 // GLOBAL VARIABLES
@@ -15,11 +25,20 @@ const int SCREEN_HEIGHT = 500;
 SDL2Aux *sdlAux;
 int t;
 
+vector<Triangle> triangles;
+
 // ----------------------------------------------------------------------------
 // FUNCTIONS
 
 void Update(void);
 void Draw(void);
+
+bool ClosestIntersection(
+	vec3 start,
+	vec3 dir,
+	const vector<Triangle>& triangles,
+	Intersection& closestIntersection
+);
 
 int main( int argc, char* argv[] )
 {
@@ -57,4 +76,36 @@ void Draw()
 		}
 	}
 	sdlAux->render();
+}
+
+bool ClosestIntersection(
+	vec3 start,
+	vec3 dir,
+	const vector<Triangle>& triangles,
+	Intersection& closestIntersection
+)
+{
+	float max = std::numeric_limits<float>::max();
+	closestIntersection = {vec3(max, max, max), max, -1};
+
+	for( size_t index = 0; index < triangles.size(); ++index)
+	{
+		vec3 v0 = triangles[index].v0;
+		vec3 v1 = triangles[index].v1;
+		vec3 v2 = triangles[index].v2;
+		vec3 e1 = v1 - v0;
+		vec3 e2 = v2 - v0;
+		vec3 b = start - v0;
+		mat3 A( -dir, e1, e2 );
+		vec3 x = glm::inverse(A) * b; // Intersection point
+
+		// Update closestIntersection
+		float distance = glm::distance(start, x); 
+		if(distance < closestIntersection.distance)
+		{
+			closestIntersection.distance = distance;
+			closestIntersection.position = x;
+			closestIntersection.triangleIndex = index;
+		}
+	}
 }
