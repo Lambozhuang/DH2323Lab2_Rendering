@@ -87,8 +87,9 @@ bool ClosestIntersection(
 {
 	float max = std::numeric_limits<float>::max();
 	closestIntersection = {vec3(max, max, max), max, -1};
+	bool result = false;
 
-	for( size_t index = 0; index < triangles.size(); ++index)
+	for( size_t index = 0; index < triangles.size(); index++)
 	{
 		vec3 v0 = triangles[index].v0;
 		vec3 v1 = triangles[index].v1;
@@ -115,6 +116,9 @@ bool ClosestIntersection(
 			closestIntersection.distance = distance;
 			closestIntersection.position = x;
 			closestIntersection.triangleIndex = index;
+			result = true;
 		}
 	}
+
+	return result;
 }
