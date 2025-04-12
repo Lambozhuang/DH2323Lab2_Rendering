@@ -27,6 +27,9 @@ int t;
 
 vector<Triangle> triangles;
 
+float focalLength = (float)SCREEN_HEIGHT;
+vec3 cameraPos( 0, 0, -3 );
+
 // ----------------------------------------------------------------------------
 // FUNCTIONS
 
@@ -44,6 +47,8 @@ int main( int argc, char* argv[] )
 {
 	sdlAux = new SDL2Aux(SCREEN_WIDTH, SCREEN_HEIGHT);
 	t = SDL_GetTicks();	// Set start value for timer.
+
+	LoadTestModel(triangles);
 
 	while (!sdlAux->quitEvent())
 	{
@@ -71,7 +76,13 @@ void Draw()
 	{
 		for( int x=0; x<SCREEN_WIDTH; ++x )
 		{
-			vec3 color( 1, 0.5, 0.5 );
+			vec3 color( 0, 0, 0 );
+			Intersection closestIntersection;
+			if(ClosestIntersection(cameraPos, vec3( x-(SCREEN_WIDTH/2), y-(SCREEN_HEIGHT/2), focalLength ), triangles, closestIntersection))
+			{
+				color = triangles[closestIntersection.triangleIndex].color;	
+			}
+			
 			sdlAux->putPixel(x, y, color);
 		}
 	}
@@ -89,7 +100,7 @@ bool ClosestIntersection(
 	closestIntersection = {vec3(max, max, max), max, -1};
 	bool result = false;
 
-	for( size_t index = 0; index < triangles.size(); index++)
+	for( size_t index = 0; index < triangles.size(); ++index)
 	{
 		vec3 v0 = triangles[index].v0;
 		vec3 v1 = triangles[index].v1;
@@ -101,20 +112,22 @@ bool ClosestIntersection(
 		mat3 At(b, e1, e2);
 
 		// If t < 0 then skip the rest of the calculation
-		float t = glm::determinant(At) / glm::determinant(A);
-		if(t < 0)
-		{
-			continue;
-		}
+		// float t = glm::determinant(At) / glm::determinant(A);
+		// if(t < 0)
+		// {
+		// 	continue;
+		// }
 
-		vec3 x = glm::inverse(A) * b; // Intersection point
+		vec3 tuv = glm::inverse(A) * b;
+		float t = tuv.x;
+		float u = tuv.y;
+		float v = tuv.z;
 
 		// Update closestIntersection
-		float distance = glm::distance(start, x); 
-		if(distance < closestIntersection.distance)
+		if(u >= 0.0f && v >= 0.0f && (u + v) <= 1.0f && t >= 0.0f && t < closestIntersection.distance)
 		{
-			closestIntersection.distance = distance;
-			closestIntersection.position = x;
+			closestIntersection.distance = t;
+			closestIntersection.position = start + t * dir;
 			closestIntersection.triangleIndex = index;
 			result = true;
 		}
