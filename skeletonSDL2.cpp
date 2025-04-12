@@ -29,6 +29,10 @@ vector<Triangle> triangles;
 
 float focalLength = (float)SCREEN_HEIGHT;
 vec3 cameraPos( 0, 0, -3 );
+mat3 R(1.0f);
+float yaw = 0.0f;
+float moveSpeed = 0.05f;
+float rotateSpeed = 0.025f;
 
 // ----------------------------------------------------------------------------
 // FUNCTIONS
@@ -66,6 +70,28 @@ void Update(void)
 	float dt = float(t2-t);
 	t = t2;
 	cout << "Render time: " << dt << " ms." << endl;
+	const Uint8* keystate = SDL_GetKeyboardState(NULL);
+	if( keystate[SDL_SCANCODE_W] )
+	{
+		cameraPos += moveSpeed * vec3(R[0][2], R[1][2], R[2][2]);
+	}
+	if( keystate[SDL_SCANCODE_S] )
+	{
+		cameraPos -= moveSpeed * vec3(R[0][2], R[1][2], R[2][2]);
+	}
+	if( keystate[SDL_SCANCODE_A] )
+	{
+		yaw -= rotateSpeed;
+	}
+	if( keystate[SDL_SCANCODE_D] )
+	{
+		yaw += rotateSpeed;
+	}
+	R = mat3(
+		cos(yaw), 0, sin(yaw),
+		0, 1, 0,
+		-sin(yaw), 0, cos(yaw)
+	);
 }
 
 void Draw()
@@ -78,7 +104,7 @@ void Draw()
 		{
 			vec3 color( 0, 0, 0 );
 			Intersection closestIntersection;
-			if(ClosestIntersection(cameraPos, vec3( x-(SCREEN_WIDTH/2), y-(SCREEN_HEIGHT/2), focalLength ), triangles, closestIntersection))
+			if(ClosestIntersection(cameraPos, vec3( x-(SCREEN_WIDTH/2), y-(SCREEN_HEIGHT/2), focalLength ) * R, triangles, closestIntersection))
 			{
 				color = triangles[closestIntersection.triangleIndex].color;	
 			}
