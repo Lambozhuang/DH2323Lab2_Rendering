@@ -118,8 +118,8 @@ void Draw() {
                                    y - (SCREEN_HEIGHT / 2), focalLength) *
                                   R,
                               triangles, closestIntersection)) {
-        // color = triangles[closestIntersection.triangleIndex].color;
-        color = DirectLight(closestIntersection);
+        color = DirectLight(closestIntersection) *
+                triangles[closestIntersection.triangleIndex].color;
       }
 
       sdlAux->putPixel(x, y, color);
