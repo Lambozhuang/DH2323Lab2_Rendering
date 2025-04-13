@@ -149,11 +149,11 @@ bool ClosestIntersection(vec3 start, vec3 dir,
 
     // If t < 0 then skip the rest of the calculation
     float t = glm::determinant(At) / glm::determinant(A);
-    float u = glm::determinant(Au) / glm::determinant(A);
-    float v = glm::determinant(Av) / glm::determinant(A);
     if (t < 0) {
       continue;
     }
+    float u = glm::determinant(Au) / glm::determinant(A);
+    float v = glm::determinant(Av) / glm::determinant(A);
 
     // vec3 tuv = glm::inverse(A) * b;
     // float t = tuv.x;
@@ -174,11 +174,21 @@ bool ClosestIntersection(vec3 start, vec3 dir,
 }
 
 vec3 DirectLight(const Intersection &i) {
-  float r = glm::distance(lightPos, i.position);
-  vec3 lightDir = glm::normalize(lightPos - i.position);
+  float distanceToLight = glm::distance(lightPos, i.position);
+  vec3 lightDirection = glm::normalize(lightPos - i.position);
+
+  Intersection intersection;
+  if (ClosestIntersection(i.position + 1e-3f * lightDirection, lightDirection,
+                          triangles,
+                          intersection)) { // Use 1e-3f to avoid self hit
+    if (intersection.distance < distanceToLight) {
+      return vec3(0.0);
+    }
+  }
+
   vec3 normal = triangles[i.triangleIndex].normal;
   vec3 directIllumination =
-      (lightColor * glm::max(glm::dot(lightDir, normal), 0.0f)) /
-      (4 * r * r * glm::pi<float>());
+      (lightColor * glm::max(glm::dot(lightDirection, normal), 0.0f)) /
+      (4 * distanceToLight * distanceToLight * glm::pi<float>());
   return directIllumination;
 }
