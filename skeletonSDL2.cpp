@@ -33,6 +33,10 @@ float yaw = 0.0f;
 float moveSpeed = 0.05f;
 float rotateSpeed = 0.025f;
 
+// Light source
+vec3 lightPos(0, -0.5, -0.7);
+vec3 lightColor = 14.f * vec3(1, 1, 1);
+
 // ----------------------------------------------------------------------------
 // FUNCTIONS
 
@@ -42,6 +46,7 @@ void Draw(void);
 bool ClosestIntersection(vec3 start, vec3 dir,
                          const vector<Triangle> &triangles,
                          Intersection &closestIntersection);
+vec3 DirectLight(const Intersection &i);
 
 int main(int argc, char *argv[]) {
   sdlAux = new SDL2Aux(SCREEN_WIDTH, SCREEN_HEIGHT);
@@ -143,4 +148,13 @@ bool ClosestIntersection(vec3 start, vec3 dir,
   }
 
   return result;
+}
+
+vec3 DirectLight(const Intersection &i) {
+  float r = glm::distance(lightPos, i.position);
+  vec3 lightDir = glm::normalize(lightPos - i.position);
+  vec3 normal = triangles[i.triangleIndex].normal;
+  vec3 directIllumination =
+      (lightColor * glm::max(glm::dot(lightDir, normal), 0.0f)) / (4 * r * r);
+  return directIllumination;
 }
