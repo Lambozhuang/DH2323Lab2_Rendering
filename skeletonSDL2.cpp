@@ -1,8 +1,10 @@
 // DH2323 skeleton code, Lab2 (SDL2 version)
 #include "SDL2Auxiliary.h"
 #include "TestModel.h"
+#include <cmath>
 #include <cstddef>
 #include <glm/glm.hpp>
+#include <glm/gtc/constants.hpp>
 #include <iostream>
 #include <limits>
 
@@ -69,19 +71,39 @@ void Update(void) {
   t = t2;
   cout << "Render time: " << dt << " ms." << endl;
   const Uint8 *keystate = SDL_GetKeyboardState(NULL);
-  if (keystate[SDL_SCANCODE_W]) {
+  if (keystate[SDL_SCANCODE_UP]) {
     cameraPos += moveSpeed * vec3(R[0][2], R[1][2], R[2][2]);
   }
-  if (keystate[SDL_SCANCODE_S]) {
+  if (keystate[SDL_SCANCODE_DOWN]) {
     cameraPos -= moveSpeed * vec3(R[0][2], R[1][2], R[2][2]);
   }
-  if (keystate[SDL_SCANCODE_A]) {
+  if (keystate[SDL_SCANCODE_LEFT]) {
     yaw -= rotateSpeed;
   }
-  if (keystate[SDL_SCANCODE_D]) {
+  if (keystate[SDL_SCANCODE_RIGHT]) {
     yaw += rotateSpeed;
   }
   R = mat3(cos(yaw), 0, sin(yaw), 0, 1, 0, -sin(yaw), 0, cos(yaw));
+
+  // Light movement
+  if (keystate[SDL_SCANCODE_W]) {
+    lightPos.z += moveSpeed;
+  }
+  if (keystate[SDL_SCANCODE_S]) {
+    lightPos.z -= moveSpeed;
+  }
+  if (keystate[SDL_SCANCODE_A]) {
+    lightPos.x -= moveSpeed;
+  }
+  if (keystate[SDL_SCANCODE_D]) {
+    lightPos.x += moveSpeed;
+  }
+  if (keystate[SDL_SCANCODE_Q]) {
+    lightPos.y -= moveSpeed;
+  }
+  if (keystate[SDL_SCANCODE_E]) {
+    lightPos.y += moveSpeed;
+  }
 }
 
 void Draw() {
@@ -96,7 +118,8 @@ void Draw() {
                                    y - (SCREEN_HEIGHT / 2), focalLength) *
                                   R,
                               triangles, closestIntersection)) {
-        color = triangles[closestIntersection.triangleIndex].color;
+        // color = triangles[closestIntersection.triangleIndex].color;
+        color = DirectLight(closestIntersection);
       }
 
       sdlAux->putPixel(x, y, color);
@@ -155,6 +178,7 @@ vec3 DirectLight(const Intersection &i) {
   vec3 lightDir = glm::normalize(lightPos - i.position);
   vec3 normal = triangles[i.triangleIndex].normal;
   vec3 directIllumination =
-      (lightColor * glm::max(glm::dot(lightDir, normal), 0.0f)) / (4 * r * r);
+      (lightColor * glm::max(glm::dot(lightDir, normal), 0.0f)) /
+      (4 * r * r * glm::pi<float>());
   return directIllumination;
 }
