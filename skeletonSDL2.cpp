@@ -38,6 +38,7 @@ float rotateSpeed = 0.025f;
 // Light source
 vec3 lightPos(0, -0.5, -0.7);
 vec3 lightColor = 14.f * vec3(1, 1, 1);
+vec3 indirectLight = 0.5f * vec3(1, 1, 1);
 
 // ----------------------------------------------------------------------------
 // FUNCTIONS
@@ -118,7 +119,7 @@ void Draw() {
                                    y - (SCREEN_HEIGHT / 2), focalLength) *
                                   R,
                               triangles, closestIntersection)) {
-        color = DirectLight(closestIntersection) *
+        color = (DirectLight(closestIntersection) + indirectLight) *
                 triangles[closestIntersection.triangleIndex].color;
       }
 
